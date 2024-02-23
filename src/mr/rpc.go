@@ -40,13 +40,26 @@ type RPCArgs struct {
 type RPCReply struct {
 	Socket string `json:"socket"`
 	// allocate index when connected
-	Index int32  `json:"index"`
-	Task  string `json:"task"`
+	Index     int32 `json:"index"`
+	Task      *Task `json:"task"`
+	Online    bool  `json:"online"`
+	ReduceNum int   `json:"reduce_n_um"`
 }
 
 type FileState struct {
 	Socket  string `json:"socket"`
 	LastEnd int64  `json:"last_end"`
+}
+
+type RPCTaskArgs struct {
+	Type         int32
+	TaskLocation string
+	Index        int32
+	Offset       int32
+}
+
+type RPCTaskReply struct {
+	Task []*Task
 }
 
 // Cook up a unique-ish UNIX-domain socket name
