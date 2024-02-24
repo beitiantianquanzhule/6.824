@@ -193,15 +193,18 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	rf.heartBeatMu.Unlock()
 	rf.votedMu.Lock()
 	defer rf.votedMu.Unlock()
+	fmt.Println("1")
 	if rf.hasVoted {
 		reply.VoteGranted = false
 		return
 	}
+	fmt.Println("2")
 	if args.Term <= rf.currentTerm {
 		fmt.Println(strconv.Itoa(rf.me) + "的term 比" + strconv.Itoa(args.CandidateId) + "大")
 		reply.VoteGranted = false
 		return
 	}
+	fmt.Println("3")
 	rf.hasVoted = true
 	rf.votedFor = args.CandidateId
 	rf.nextIndex = args.LastLogIndex + 1
