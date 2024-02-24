@@ -198,10 +198,11 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	defer rf.votedMu.Unlock()
 
 	if rf.hasVoted {
+		fmt.Println(strconv.Itoa(rf.me) + "已经投票了" + "无法给" + strconv.Itoa(args.CandidateId) + "投票了" + "已经投给了" + strconv.Itoa(rf.votedFor))
 		reply.VoteGranted = false
 		return
 	}
-	fmt.Println("2")
+
 	if args.Term <= rf.currentTerm {
 		fmt.Println(strconv.Itoa(rf.me) + "的term 比" + strconv.Itoa(args.CandidateId) + "大")
 		reply.VoteGranted = false
