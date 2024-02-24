@@ -298,7 +298,7 @@ func (rf *Raft) ticker() {
 		time.Sleep(sleepTime)
 		rf.heartBeatMu.Lock()
 		if !rf.hasHeartBeat {
-			fmt.Printf(strconv.Itoa(rf.me) + "选择" + "发起选举")
+			fmt.Println(strconv.Itoa(rf.me) + "选择" + "发起选举")
 			rf.statusMu.Lock()
 			rf.status = 1
 			rf.statusMu.Unlock()
@@ -351,7 +351,9 @@ func (rf *Raft) StartRequestVote() {
 		}
 		reply := &RequestVoteReply{}
 		if !rf.sendRequestVote(i, args, reply) {
+			fmt.Println(strconv.Itoa(i) + "收到了投票请求")
 			if reply.VoteGranted {
+				fmt.Println(strconv.Itoa(i) + "投票给了" + strconv.Itoa(rf.me))
 				count++
 			}
 		}
