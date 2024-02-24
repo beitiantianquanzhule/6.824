@@ -371,6 +371,7 @@ func (rf *Raft) StartRequestVote() {
 		reply := &RequestVoteReply{}
 		if !rf.sendRequestVote(i, args, reply) {
 			fmt.Println(strconv.Itoa(i) + "收到了投票请求")
+			time.Sleep(50 * time.Millisecond)
 			if reply.VoteGranted {
 				fmt.Println(strconv.Itoa(i) + "投票给了" + strconv.Itoa(rf.me))
 				count++
