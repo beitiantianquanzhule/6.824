@@ -333,7 +333,7 @@ func (rf *Raft) SendHeartBeat() {
 
 		args := &AppendEntriesArgs{}
 		reply := &AppendEntriesReply{}
-		rf.peers[i].Call("Raft.RequestVote", args, reply)
+		rf.peers[i].Call("Raft.ReceiveInstructRPC", args, reply)
 	}
 }
 
