@@ -344,6 +344,7 @@ func (rf *Raft) SendHeartBeat() {
 		reply := &AppendEntriesReply{}
 		rf.peers[i].Call("Raft.ReceiveInstructRPC", args, reply)
 		if reply.Term > rf.currentTerm {
+			fmt.Println("领导下线")
 			rf.statusMu.Lock()
 			rf.status = 0
 			rf.statusMu.Unlock()
