@@ -158,23 +158,23 @@ func (rf *Raft) Snapshot(index int, snapshot []byte) {
 // field names must start with capital letters!
 type RequestVoteArgs struct {
 	// Your data here (2A, 2B).
-	term         int // 候选人申请的任期号
-	candidateId  int // 候选人序号
-	lastLogIndex int // 候选人最后日志序号
-	lastLogTerm  int // 候选人日志最后任期号
+	Term         int // 候选人申请的任期号
+	CandidateId  int // 候选人序号
+	LastLogIndex int // 候选人最后日志序号
+	LastLogTerm  int // 候选人日志最后任期号
 }
 
 // example RequestVote RPC reply structure.
 // field names must start with capital letters!
 type RequestVoteReply struct {
 	// Your data here (2A).
-	term        int  // 当前任期号
-	voteGranted bool // 是否赢得选票
+	Term        int  // 当前任期号
+	VoteGranted bool // 是否赢得选票
 }
 
 type AppendEntriesArgs struct {
-	leader int // 领导者的编号
-	term   int // 领导者的任期
+	Leader int // 领导者的编号
+	Term   int // 领导者的任期
 }
 
 type AppendEntriesReply struct {
