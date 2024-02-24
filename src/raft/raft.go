@@ -187,6 +187,7 @@ type AppendEntriesReply struct {
 func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	// Your code here (2A, 2B).
 	reply.Term = rf.currentTerm
+	fmt.Println("收到投票请求")
 	rf.heartBeatMu.Lock()
 	rf.hasHeartBeat = true
 	rf.heartBeatMu.Unlock()
@@ -197,6 +198,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 		return
 	}
 	if args.Term <= rf.currentTerm {
+		fmt.Println(strconv.Itoa(rf.me) + "的term 比" + strconv.Itoa(args.CandidateId) + "大")
 		reply.VoteGranted = false
 		return
 	}
