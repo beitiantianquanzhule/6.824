@@ -219,7 +219,9 @@ func (rf *Raft) ReceiveInstructRPC(args *AppendEntriesArgs, reply *AppendEntries
 	rf.heartBeatMu.Lock()
 	rf.hasHeartBeat = true
 	rf.heartBeatMu.Unlock()
-
+	rf.votedMu.Lock()
+	rf.hasVoted = false
+	rf.votedMu.Unlock()
 }
 
 // example code to send a RequestVote RPC to a server.
