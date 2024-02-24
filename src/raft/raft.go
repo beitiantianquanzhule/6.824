@@ -187,13 +187,16 @@ type AppendEntriesReply struct {
 func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	// Your code here (2A, 2B).
 	reply.Term = rf.currentTerm
-	fmt.Println("收到投票请求")
+	fmt.Println(strconv.Itoa(rf.me) + "收到投票请求" + "给" + strconv.Itoa(args.CandidateId))
+	rf.heartBeatMu.Lock()
+	rf.hasHeartBeat = true
+	rf.heartBeatMu.Unlock()
 	rf.heartBeatMu.Lock()
 	rf.hasHeartBeat = true
 	rf.heartBeatMu.Unlock()
 	rf.votedMu.Lock()
 	defer rf.votedMu.Unlock()
-	fmt.Println("1")
+
 	if rf.hasVoted {
 		reply.VoteGranted = false
 		return
