@@ -356,6 +356,7 @@ func (rf *Raft) HeartBeatsCheck() {
 
 func (rf *Raft) StartRequestVote() {
 	count := 1
+
 	rf.votedMu.Lock()
 	rf.votedFor = rf.me
 	rf.hasVoted = true
@@ -383,10 +384,11 @@ func (rf *Raft) StartRequestVote() {
 	rf.statusMu.Lock()
 	if count > len(rf.peers)/2 {
 		rf.status = 2
-		rf.currentTerm = rf.currentTerm + 1
+
 	} else {
 		rf.status = 0
 	}
+	rf.currentTerm = rf.currentTerm + 1
 	rf.statusMu.Unlock()
 }
 
