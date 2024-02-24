@@ -307,6 +307,7 @@ func (rf *Raft) ticker() {
 			rf.statusMu.Lock()
 			rf.status = 1
 			rf.statusMu.Unlock()
+
 			go rf.StartRequestVote()
 		}
 		rf.hasHeartBeat = false
@@ -344,6 +345,10 @@ func (rf *Raft) HeartBeatsCheck() {
 
 func (rf *Raft) StartRequestVote() {
 	count := 1
+	rf.votedMu.Lock()
+	rf.votedFor = rf.me
+	rf.hasVoted = true
+	rf.votedMu.Unlock()
 	for i := 0; i < len(rf.peers); i++ {
 		if i == rf.me {
 			continue
