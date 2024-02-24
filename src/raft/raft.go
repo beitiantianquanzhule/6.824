@@ -250,6 +250,12 @@ func (rf *Raft) ReceiveInstructRPC(args *AppendEntriesArgs, reply *AppendEntries
 // the struct itself.
 func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *RequestVoteReply) bool {
 	ok := rf.peers[server].Call("Raft.RequestVote", args, reply)
+	if reply.VoteGranted {
+		fmt.Println(strconv.Itoa(server) + "的投票同意")
+	} else {
+		fmt.Println(strconv.Itoa(server) + "的投票不同意")
+	}
+
 	return ok
 }
 
