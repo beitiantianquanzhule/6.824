@@ -248,7 +248,7 @@ func (rf *Raft) ReceiveInstructRPC(args *AppendEntriesArgs, reply *AppendEntries
 // capitalized all field names in structs passed over RPC, and
 // that the caller passes the address of the reply struct with &, not
 // the struct itself.
-func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *RequestVoteReply) bool {
+func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *RequestVoteReply) (bool, bool) {
 	ok := rf.peers[server].Call("Raft.RequestVote", args, reply)
 	if reply.VoteGranted {
 		fmt.Println(strconv.Itoa(server) + "的投票同意")
@@ -256,7 +256,7 @@ func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *Reques
 		fmt.Println(strconv.Itoa(server) + "的投票不同意")
 	}
 
-	return ok
+	return ok, reply.VoteGranted
 }
 
 // the service using Raft (e.g. a k/v server) wants to start
@@ -369,10 +369,10 @@ func (rf *Raft) StartRequestVote() {
 			LastLogTerm:  rf.currentTerm,
 		}
 		reply := &RequestVoteReply{}
-		if !rf.sendRequestVote(i, args, reply) {
+		if ok, vote := rf.sendRequestVote(i, args, reply); ok {
 			fmt.Println(strconv.Itoa(i) + "收到了投票请求")
 			time.Sleep(50 * time.Millisecond)
-			if reply.VoteGranted {
+			if vote {
 				fmt.Println(strconv.Itoa(i) + "投票给了" + strconv.Itoa(rf.me))
 				count++
 			}
