@@ -342,6 +342,7 @@ func (rf *Raft) HeartBeatsCheck() {
 	for rf.killed() == false {
 		_, isLeader := rf.GetState()
 		if isLeader {
+			fmt.Println(strconv.Itoa(rf.me) + "发起了心跳检测")
 			rf.heartBeatMu.Lock()
 			rf.hasHeartBeat = true
 			rf.heartBeatMu.Unlock()
@@ -381,6 +382,7 @@ func (rf *Raft) StartRequestVote() {
 	rf.statusMu.Lock()
 	if count > len(rf.peers)/2 {
 		rf.status = 2
+		rf.currentTerm = rf.currentTerm + 1
 	} else {
 		rf.status = 0
 	}
