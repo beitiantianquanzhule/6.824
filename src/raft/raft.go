@@ -183,21 +183,21 @@ type AppendEntriesReply struct {
 // example RequestVote RPC handler.
 func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	// Your code here (2A, 2B).
-	reply.term = rf.currentTerm
+	reply.Term = rf.currentTerm
 	rf.votedMu.Lock()
 	defer rf.votedMu.Unlock()
 	if rf.hasVoted {
-		reply.voteGranted = false
+		reply.VoteGranted = false
 		return
 	}
-	if args.term <= rf.currentTerm {
-		reply.voteGranted = false
+	if args.Term <= rf.currentTerm {
+		reply.VoteGranted = false
 		return
 	}
 	rf.hasVoted = true
-	rf.votedFor = args.candidateId
-	rf.nextIndex = args.lastLogIndex + 1
-	reply.voteGranted = true
+	rf.votedFor = args.CandidateId
+	rf.nextIndex = args.LastLogIndex + 1
+	reply.VoteGranted = true
 }
 
 func (rf *Raft) ReceiveInstructRPC(args *AppendEntriesArgs, reply *AppendEntriesReply) {
@@ -334,14 +334,14 @@ func (rf *Raft) StartRequestVote() {
 			continue
 		}
 		args := &RequestVoteArgs{
-			term:         rf.currentTerm + 1,
-			candidateId:  rf.me,
-			lastLogIndex: rf.lastApplied,
-			lastLogTerm:  rf.currentTerm,
+			Term:         rf.currentTerm + 1,
+			CandidateId:  rf.me,
+			LastLogIndex: rf.lastApplied,
+			LastLogTerm:  rf.currentTerm,
 		}
 		reply := &RequestVoteReply{}
 		if !rf.sendRequestVote(i, args, reply) {
-			if reply.voteGranted {
+			if reply.VoteGranted {
 				count++
 			}
 		}
