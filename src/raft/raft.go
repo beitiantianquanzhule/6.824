@@ -249,15 +249,15 @@ func (rf *Raft) ReceiveInstructRPC(args *AppendEntriesArgs, reply *AppendEntries
 // capitalized all field names in structs passed over RPC, and
 // that the caller passes the address of the reply struct with &, not
 // the struct itself.
-func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *RequestVoteReply) (bool, bool) {
-	ok := rf.peers[server].Call("Raft.RequestVote", args, reply)
+func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *RequestVoteReply) (bool, int) {
+	rf.peers[server].Call("Raft.RequestVote", args, reply)
 	if reply.VoteGranted {
 		fmt.Println(strconv.Itoa(server) + "的投票同意")
 	} else {
 		fmt.Println(strconv.Itoa(server) + "的投票不同意")
 	}
 
-	return ok, reply.VoteGranted
+	return reply.VoteGranted, reply.Term
 }
 
 // the service using Raft (e.g. a k/v server) wants to start
@@ -356,7 +356,7 @@ func (rf *Raft) HeartBeatsCheck() {
 
 func (rf *Raft) StartRequestVote() {
 	count := 1
-
+	rf.currentTerm = rf.currentTerm + 1
 	rf.votedMu.Lock()
 	rf.votedFor = rf.me
 	rf.hasVoted = true
@@ -366,29 +366,32 @@ func (rf *Raft) StartRequestVote() {
 			continue
 		}
 		args := &RequestVoteArgs{
-			Term:         rf.currentTerm + 1,
+			Term:         rf.currentTerm,
 			CandidateId:  rf.me,
 			LastLogIndex: rf.lastApplied,
-			LastLogTerm:  rf.currentTerm,
+			LastLogTerm:  rf.currentTerm - 1,
 		}
 		reply := &RequestVoteReply{}
-		if ok, vote := rf.sendRequestVote(i, args, reply); ok {
-			fmt.Println(strconv.Itoa(i) + "收到了投票请求")
-			time.Sleep(50 * time.Millisecond)
-			if vote {
-				fmt.Println(strconv.Itoa(i) + "投票给了" + strconv.Itoa(rf.me))
-				count++
-			}
+		ok, term := rf.sendRequestVote(i, args, reply)
+		if ok {
+			count++
+		}
+		if term >= rf.currentTerm {
+			break
 		}
 	}
 	rf.statusMu.Lock()
 	if count > len(rf.peers)/2 {
 		rf.status = 2
+		rf.votedMu.Lock()
+
+		rf.hasVoted = false
+		rf.votedMu.Unlock()
 
 	} else {
 		rf.status = 0
 	}
-	rf.currentTerm = rf.currentTerm + 1
+
 	rf.statusMu.Unlock()
 }
 
