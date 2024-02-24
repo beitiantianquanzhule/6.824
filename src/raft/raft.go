@@ -181,6 +181,7 @@ type AppendEntriesArgs struct {
 }
 
 type AppendEntriesReply struct {
+	Term int // 现在的任期
 }
 
 // example RequestVote RPC handler.
@@ -217,6 +218,10 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 }
 
 func (rf *Raft) ReceiveInstructRPC(args *AppendEntriesArgs, reply *AppendEntriesReply) {
+	if args.Term < rf.currentTerm {
+		reply.Term = rf.currentTerm
+		return
+	}
 	rf.heartBeatMu.Lock()
 	rf.hasHeartBeat = true
 	rf.heartBeatMu.Unlock()
@@ -338,6 +343,12 @@ func (rf *Raft) SendHeartBeat() {
 		args := &AppendEntriesArgs{}
 		reply := &AppendEntriesReply{}
 		rf.peers[i].Call("Raft.ReceiveInstructRPC", args, reply)
+		if reply.Term > rf.currentTerm {
+			rf.statusMu.Lock()
+			rf.status = 0
+			rf.statusMu.Unlock()
+			return
+		}
 	}
 }
 
