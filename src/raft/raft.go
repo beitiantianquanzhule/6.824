@@ -211,6 +211,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	rf.hasVoted = true
 	rf.votedFor = args.CandidateId
 	rf.nextIndex = args.LastLogIndex + 1
+	rf.currentTerm = args.Term
 	reply.VoteGranted = true
 }
 
