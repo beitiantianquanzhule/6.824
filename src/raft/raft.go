@@ -20,6 +20,8 @@ package raft
 import (
 	"fmt"
 	"math/rand"
+	"strconv"
+
 	//	"bytes"
 	"sync"
 	"sync/atomic"
@@ -296,7 +298,7 @@ func (rf *Raft) ticker() {
 		time.Sleep(sleepTime)
 		rf.heartBeatMu.Lock()
 		if !rf.hasHeartBeat {
-			fmt.Printf("发起选举")
+			fmt.Printf(strconv.Itoa(rf.me) + "选择" + "发起选举")
 			rf.statusMu.Lock()
 			rf.status = 1
 			rf.statusMu.Unlock()
@@ -325,6 +327,9 @@ func (rf *Raft) HeartBeatsCheck() {
 	for rf.killed() == false {
 		_, isLeader := rf.GetState()
 		if isLeader {
+			rf.heartBeatMu.Lock()
+			rf.hasHeartBeat = true
+			rf.heartBeatMu.Unlock()
 			go rf.SendHeartBeat()
 		}
 		time.Sleep(150 * time.Millisecond)
