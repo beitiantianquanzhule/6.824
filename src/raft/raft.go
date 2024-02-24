@@ -18,6 +18,7 @@ package raft
 //
 
 import (
+	"fmt"
 	"math/rand"
 	//	"bytes"
 	"sync"
@@ -184,6 +185,9 @@ type AppendEntriesReply struct {
 func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	// Your code here (2A, 2B).
 	reply.Term = rf.currentTerm
+	rf.heartBeatMu.Lock()
+	rf.hasHeartBeat = true
+	rf.heartBeatMu.Unlock()
 	rf.votedMu.Lock()
 	defer rf.votedMu.Unlock()
 	if rf.hasVoted {
@@ -292,6 +296,7 @@ func (rf *Raft) ticker() {
 		time.Sleep(sleepTime)
 		rf.heartBeatMu.Lock()
 		if !rf.hasHeartBeat {
+			fmt.Printf("发起选举")
 			rf.statusMu.Lock()
 			rf.status = 1
 			rf.statusMu.Unlock()
