@@ -209,7 +209,6 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 		reply.VoteGranted = false
 		return
 	}
-	fmt.Println("3")
 	rf.hasVoted = true
 	rf.votedFor = args.CandidateId
 	rf.nextIndex = args.LastLogIndex + 1
@@ -219,6 +218,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 
 func (rf *Raft) ReceiveInstructRPC(args *AppendEntriesArgs, reply *AppendEntriesReply) {
 	if args.Term < rf.currentTerm {
+
 		reply.Term = rf.currentTerm
 		return
 	}
@@ -340,7 +340,9 @@ func (rf *Raft) SendHeartBeat() {
 			continue
 		}
 
-		args := &AppendEntriesArgs{}
+		args := &AppendEntriesArgs{
+			Term: rf.currentTerm,
+		}
 		reply := &AppendEntriesReply{}
 		rf.peers[i].Call("Raft.ReceiveInstructRPC", args, reply)
 		if reply.Term > rf.currentTerm {
