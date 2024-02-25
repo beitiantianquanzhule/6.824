@@ -228,7 +228,7 @@ func (rf *Raft) ReceiveInstructRPC(args *AppendEntriesArgs, reply *AppendEntries
 	rf.votedMu.Lock()
 	rf.hasVoted = false
 	rf.votedMu.Unlock()
-	rf.currentTerm = args.Term
+	//rf.currentTerm = args.Term
 }
 
 // example code to send a RequestVote RPC to a server.
@@ -322,7 +322,9 @@ func (rf *Raft) ticker() {
 		time.Sleep(sleepTime)
 		rf.heartBeatMu.Lock()
 		if !rf.hasHeartBeat {
-			fmt.Println(strconv.Itoa(rf.me) + "选择" + "发起选举")
+
+			rf.currentTerm = rf.currentTerm + 1
+			fmt.Println(strconv.Itoa(rf.me) + "选择" + "发起选举" + "term是" + strconv.Itoa(rf.currentTerm))
 			rf.statusMu.Lock()
 			rf.status = 1
 			rf.statusMu.Unlock()
@@ -340,7 +342,6 @@ func (rf *Raft) SendHeartBeat() {
 		if i == rf.me {
 			continue
 		}
-
 		args := &AppendEntriesArgs{
 			Term: rf.currentTerm,
 		}
@@ -374,7 +375,6 @@ func (rf *Raft) HeartBeatsCheck() {
 
 func (rf *Raft) StartRequestVote() {
 	count := 1
-	rf.currentTerm = rf.currentTerm + 1
 	rf.votedMu.Lock()
 	rf.votedFor = rf.me
 	rf.hasVoted = true
