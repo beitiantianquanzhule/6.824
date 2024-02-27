@@ -196,7 +196,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	rf.votedMu.Lock()
 	defer rf.votedMu.Unlock()
 
-	if rf.hasVoted && rf.votedTerm >= args.Term {
+	if rf.hasVoted && rf.currentTerm >= args.Term {
 		fmt.Println(strconv.Itoa(rf.me) + "已经投票了" + "无法给" + strconv.Itoa(args.CandidateId) + "投票了" + "已经投给了" + strconv.Itoa(rf.votedFor))
 		reply.VoteGranted = false
 		return
@@ -208,7 +208,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 		return
 	}
 	rf.hasVoted = true
-	rf.votedTerm = args.Term
+
 	rf.votedFor = args.CandidateId
 	rf.nextIndex = args.LastLogIndex + 1
 	rf.currentTerm = args.Term
@@ -353,14 +353,15 @@ func (rf *Raft) SendHeartBeat() {
 		reply := &AppendEntriesReply{}
 		ok := rf.peers[i].Call("Raft.ReceiveInstructRPC", args, reply)
 		if !ok {
-			fmt.Println("我是" + strconv.Itoa(rf.me) + "id是" + strconv.Itoa(i) + "的服从者已经下线")
+			//fmt.Println("我是" + strconv.Itoa(rf.me) + "id是" + strconv.Itoa(i) + "的服从者已经下线")
 		}
-		fmt.Println("发起心跳检测的领导者的id是" + strconv.Itoa(rf.me) + "term是" + strconv.Itoa(rf.currentTerm) + "收到的id是" + strconv.Itoa(i) + "term是" + strconv.Itoa(reply.Term))
+		//fmt.Println("发起心跳检测的领导者的id是" + strconv.Itoa(rf.me) + "term是" + strconv.Itoa(rf.currentTerm) + "收到的id是" + strconv.Itoa(i) + "term是" + strconv.Itoa(reply.Term))
 		if reply.Term > rf.currentTerm {
 			fmt.Println("领导下线")
 			rf.statusMu.Lock()
 			rf.status = 0
 			rf.statusMu.Unlock()
+			rf.currentTerm = reply.Term
 			return
 		}
 	}
