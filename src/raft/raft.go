@@ -263,7 +263,7 @@ func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *Reques
 	fmt.Println(time.Now())
 	if !ok {
 		fmt.Println(strconv.Itoa(server) + "断线了")
-		reply.VoteGranted = true
+
 	}
 	if reply.VoteGranted {
 		fmt.Println(strconv.Itoa(server) + "的投票同意")
@@ -271,17 +271,19 @@ func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *Reques
 		fmt.Println(strconv.Itoa(server) + "的投票不同意")
 	}
 	result := ChannelResult{
-		Voted: reply.VoteGranted,
-		Term:  reply.Term,
-		Index: rf.me,
+		Voted:     reply.VoteGranted,
+		Term:      reply.Term,
+		Index:     rf.me,
+		Connected: ok,
 	}
 	resultChannel <- result
 }
 
 type ChannelResult struct {
-	Voted bool
-	Term  int
-	Index int
+	Voted     bool
+	Term      int
+	Index     int
+	Connected bool
 }
 
 // the service using Raft (e.g. a k/v server) wants to start
@@ -416,30 +418,33 @@ func (rf *Raft) StartRequestVote() {
 		reply := &RequestVoteReply{}
 		go rf.sendRequestVote(i, args, reply, result)
 	}
+	connectedNum := 1
 	for i := 0; i < len(rf.peers); i++ {
 		ch := <-result
+		if ch.Connected {
+			connectedNum++
+		}
 		if ch.Voted {
 			count++
 
-			if count > len(rf.peers)/2 {
-				rf.statusMu.Lock()
-				rf.status = 2
-				rf.statusMu.Unlock()
-				rf.votedMu.Lock()
-				rf.hasVoted = false
-				rf.votedMu.Unlock()
-				fmt.Println(strconv.Itoa(rf.me) + "成为领导者, term 是" + strconv.Itoa(rf.currentTerm))
-				rf.heartBeatMu.Lock()
-				rf.hasHeartBeat = true
-				rf.heartBeatMu.Unlock()
-				rf.SendHeartBeat()
-			} else {
-				rf.statusMu.Lock()
-				rf.status = 0
-				rf.statusMu.Unlock()
-			}
-
 		}
+	}
+	if count > connectedNum/2 {
+		rf.statusMu.Lock()
+		rf.status = 2
+		rf.statusMu.Unlock()
+		rf.votedMu.Lock()
+		rf.hasVoted = false
+		rf.votedMu.Unlock()
+		fmt.Println(strconv.Itoa(rf.me) + "成为领导者, term 是" + strconv.Itoa(rf.currentTerm))
+		rf.heartBeatMu.Lock()
+		rf.hasHeartBeat = true
+		rf.heartBeatMu.Unlock()
+		rf.SendHeartBeat()
+	} else {
+		rf.statusMu.Lock()
+		rf.status = 0
+		rf.statusMu.Unlock()
 	}
 
 }
