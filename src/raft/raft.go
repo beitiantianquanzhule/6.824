@@ -423,6 +423,10 @@ func (rf *Raft) StartRequestVote() {
 		rf.hasVoted = false
 		rf.votedMu.Unlock()
 		fmt.Println(strconv.Itoa(rf.me) + "成为领导者, term 是" + strconv.Itoa(rf.currentTerm))
+		rf.heartBeatMu.Lock()
+		rf.hasHeartBeat = true
+		rf.heartBeatMu.Unlock()
+		rf.HeartBeatsCheck()
 	} else {
 		rf.status = 0
 	}
