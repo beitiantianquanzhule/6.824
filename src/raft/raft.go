@@ -426,7 +426,7 @@ func (rf *Raft) StartRequestVote() {
 		rf.heartBeatMu.Lock()
 		rf.hasHeartBeat = true
 		rf.heartBeatMu.Unlock()
-		rf.HeartBeatsCheck()
+		rf.SendHeartBeat()
 	} else {
 		rf.status = 0
 	}
