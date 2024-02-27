@@ -418,6 +418,7 @@ func (rf *Raft) StartRequestVote() {
 		reply := &RequestVoteReply{}
 		go rf.sendRequestVote(i, args, reply, result)
 	}
+	time.Sleep(250 * time.Millisecond)
 	connectedNum := 1
 	for i := 0; i < len(rf.peers); i++ {
 		ch := <-result
@@ -429,7 +430,7 @@ func (rf *Raft) StartRequestVote() {
 
 		}
 	}
-	if count > connectedNum/2 {
+	if count > (connectedNum / 2) {
 		rf.statusMu.Lock()
 		rf.status = 2
 		rf.statusMu.Unlock()
