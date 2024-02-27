@@ -329,6 +329,7 @@ func (rf *Raft) ticker() {
 		if !rf.hasHeartBeat {
 
 			rf.currentTerm = rf.currentTerm + 1
+			fmt.Println(time.Now())
 			fmt.Println(strconv.Itoa(rf.me) + "选择" + "发起选举" + "term是" + strconv.Itoa(rf.currentTerm))
 			rf.statusMu.Lock()
 			rf.status = 1
