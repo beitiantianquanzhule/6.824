@@ -257,7 +257,10 @@ func (rf *Raft) ReceiveInstructRPC(args *AppendEntriesArgs, reply *AppendEntries
 // that the caller passes the address of the reply struct with &, not
 // the struct itself.
 func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *RequestVoteReply) (bool, int) {
-	rf.peers[server].Call("Raft.RequestVote", args, reply)
+	ok := rf.peers[server].Call("Raft.RequestVote", args, reply)
+	if !ok {
+		fmt.Println(strconv.Itoa(server) + "断线了")
+	}
 	if reply.VoteGranted {
 		fmt.Println(strconv.Itoa(server) + "的投票同意")
 	} else {
