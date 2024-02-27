@@ -420,7 +420,7 @@ func (rf *Raft) StartRequestVote() {
 	}
 	time.Sleep(250 * time.Millisecond)
 	connectedNum := 1
-	for i := 0; i < len(rf.peers); i++ {
+	for i := 0; i < len(rf.peers)-1; i++ {
 		ch := <-result
 		if ch.Connected {
 			connectedNum++
