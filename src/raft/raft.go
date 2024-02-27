@@ -418,18 +418,22 @@ func (rf *Raft) StartRequestVote() {
 		reply := &RequestVoteReply{}
 		go rf.sendRequestVote(i, args, reply, result)
 	}
-	time.Sleep(250 * time.Millisecond)
+	time.Sleep(300 * time.Millisecond)
 	connectedNum := 1
 	for i := 0; i < len(rf.peers)-1; i++ {
 		ch := <-result
+
 		if ch.Connected {
+			fmt.Println(strconv.Itoa(ch.Index) + "连接了")
 			connectedNum++
+		} else {
+			fmt.Println(strconv.Itoa(ch.Index) + "没连接")
 		}
 		if ch.Voted {
 			count++
-
 		}
 	}
+	fmt.Println(strconv.Itoa(count) + ":" + strconv.Itoa(connectedNum))
 	if count > (connectedNum / 2) {
 		rf.statusMu.Lock()
 		rf.status = 2
