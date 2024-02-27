@@ -420,9 +420,11 @@ func (rf *Raft) StartRequestVote() {
 		ch := <-result
 		if ch.Voted {
 			count++
-			rf.statusMu.Lock()
+
 			if count > len(rf.peers)/2 {
+				rf.statusMu.Lock()
 				rf.status = 2
+				rf.statusMu.Unlock()
 				rf.votedMu.Lock()
 				rf.hasVoted = false
 				rf.votedMu.Unlock()
@@ -432,10 +434,11 @@ func (rf *Raft) StartRequestVote() {
 				rf.heartBeatMu.Unlock()
 				rf.SendHeartBeat()
 			} else {
+				rf.statusMu.Lock()
 				rf.status = 0
+				rf.statusMu.Unlock()
 			}
 
-			rf.statusMu.Unlock()
 		}
 	}
 
