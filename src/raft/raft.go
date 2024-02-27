@@ -260,6 +260,7 @@ func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *Reques
 	ok := rf.peers[server].Call("Raft.RequestVote", args, reply)
 	if !ok {
 		fmt.Println(strconv.Itoa(server) + "断线了")
+		reply.VoteGranted = true
 	}
 	if reply.VoteGranted {
 		fmt.Println(strconv.Itoa(server) + "的投票同意")
