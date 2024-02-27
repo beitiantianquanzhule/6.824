@@ -98,6 +98,7 @@ func (rf *Raft) GetState() (int, bool) {
 	// Your code here (2A).
 	rf.statusMu.Lock()
 	defer rf.statusMu.Unlock()
+	isleader = false
 	if rf.status == 2 {
 		isleader = true
 	}
@@ -343,7 +344,7 @@ func (rf *Raft) SendHeartBeat() {
 		}
 		reply := &AppendEntriesReply{}
 		rf.peers[i].Call("Raft.ReceiveInstructRPC", args, reply)
-		fmt.Println("发起心跳检测的领导者的id是" + strconv.Itoa(rf.me) + "term是" + strconv.Itoa(rf.currentTerm) + "收到的term是" + strconv.Itoa(reply.Term))
+		fmt.Println("发起心跳检测的领导者的id是" + strconv.Itoa(rf.me) + "term是" + strconv.Itoa(rf.currentTerm) + "收到的id是" + strconv.Itoa(i) + "term是" + strconv.Itoa(reply.Term))
 		if reply.Term > rf.currentTerm {
 			fmt.Println("领导下线")
 			rf.statusMu.Lock()
