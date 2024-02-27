@@ -215,6 +215,7 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 }
 
 func (rf *Raft) ReceiveInstructRPC(args *AppendEntriesArgs, reply *AppendEntriesReply) {
+	fmt.Println("我是" + strconv.Itoa(rf.me) + "我的term是" + strconv.Itoa(rf.currentTerm) + "收到的id是" + strconv.Itoa(args.Leader) + "term是" + strconv.Itoa(args.Term))
 	reply.Term = rf.currentTerm
 	if args.Term < rf.currentTerm {
 		return
