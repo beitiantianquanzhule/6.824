@@ -273,7 +273,7 @@ func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *Reques
 	result := ChannelResult{
 		Voted:     reply.VoteGranted,
 		Term:      reply.Term,
-		Index:     rf.me,
+		Index:     server,
 		Connected: ok,
 	}
 	resultChannel <- result
