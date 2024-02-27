@@ -381,10 +381,12 @@ func (rf *Raft) StartRequestVote() {
 	rf.votedFor = rf.me
 	rf.hasVoted = true
 	rf.votedMu.Unlock()
+	fmt.Println(strconv.Itoa(rf.me) + "开始发起选举")
 	for i := 0; i < len(rf.peers); i++ {
 		if i == rf.me {
 			continue
 		}
+		fmt.Println("向" + strconv.Itoa(i) + "发起投票请求")
 		args := &RequestVoteArgs{
 			Term:         rf.currentTerm,
 			CandidateId:  rf.me,
@@ -394,11 +396,17 @@ func (rf *Raft) StartRequestVote() {
 		reply := &RequestVoteReply{}
 		ok, term := rf.sendRequestVote(i, args, reply)
 		if ok {
+			fmt.Println(strconv.Itoa(i) + "支持")
 			count++
 		}
-		if term >= rf.currentTerm {
+		if term == rf.currentTerm {
+			fmt.Println(strconv.Itoa(i) + "也是候选人")
+		}
+		if term > rf.currentTerm {
+			fmt.Println("自己term更小所以退出选举")
 			break
 		}
+
 	}
 	rf.statusMu.Lock()
 	if count > len(rf.peers)/2 {
