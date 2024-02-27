@@ -353,7 +353,7 @@ func (rf *Raft) SendHeartBeat() {
 		reply := &AppendEntriesReply{}
 		ok := rf.peers[i].Call("Raft.ReceiveInstructRPC", args, reply)
 		if !ok {
-			fmt.Println("id是" + strconv.Itoa(i) + "的服从者已经下线")
+			fmt.Println("我是" + strconv.Itoa(rf.me) + "id是" + strconv.Itoa(i) + "的服从者已经下线")
 		}
 		fmt.Println("发起心跳检测的领导者的id是" + strconv.Itoa(rf.me) + "term是" + strconv.Itoa(rf.currentTerm) + "收到的id是" + strconv.Itoa(i) + "term是" + strconv.Itoa(reply.Term))
 		if reply.Term > rf.currentTerm {
