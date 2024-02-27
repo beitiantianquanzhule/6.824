@@ -71,11 +71,11 @@ type Raft struct {
 	heartBeatMu  sync.Mutex
 	hasHeartBeat bool // 是否有收到心跳检测
 
-	votedMu  sync.Mutex // 投票加锁
-	hasVoted bool       // 至多只能投一次票，每次选举时刷新
-
-	commitIndex int // 已提交的index
-	lastApplied int // 已执行的index
+	votedMu     sync.Mutex // 投票加锁
+	hasVoted    bool       // 至多只能投一次票，每次选举时刷新
+	votedTerm   int        // 投票的term
+	commitIndex int        // 已提交的index
+	lastApplied int        // 已执行的index
 
 	nextIndex  int // 下一条要接收的log entries的序号，初始化为领导人最后索引值 + 1
 	matchIndex int //
@@ -196,18 +196,19 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	rf.votedMu.Lock()
 	defer rf.votedMu.Unlock()
 
-	if rf.hasVoted {
+	if rf.hasVoted && rf.votedTerm >= args.Term {
 		fmt.Println(strconv.Itoa(rf.me) + "已经投票了" + "无法给" + strconv.Itoa(args.CandidateId) + "投票了" + "已经投给了" + strconv.Itoa(rf.votedFor))
 		reply.VoteGranted = false
 		return
 	}
 
-	if args.Term <= rf.currentTerm {
+	if args.Term <= rf.currentTerm || args.Term < rf.votedTerm {
 		fmt.Println(strconv.Itoa(rf.me) + "的term 比" + strconv.Itoa(args.CandidateId) + "大")
 		reply.VoteGranted = false
 		return
 	}
 	rf.hasVoted = true
+	rf.votedTerm = args.Term
 	rf.votedFor = args.CandidateId
 	rf.nextIndex = args.LastLogIndex + 1
 	rf.currentTerm = args.Term
