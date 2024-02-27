@@ -257,7 +257,7 @@ func (rf *Raft) ReceiveInstructRPC(args *AppendEntriesArgs, reply *AppendEntries
 // capitalized all field names in structs passed over RPC, and
 // that the caller passes the address of the reply struct with &, not
 // the struct itself.
-func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *RequestVoteReply) (bool, int) {
+func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *RequestVoteReply, resultChannel chan bool) {
 	fmt.Println(time.Now())
 	ok := rf.peers[server].Call("Raft.RequestVote", args, reply)
 	fmt.Println(time.Now())
@@ -271,7 +271,7 @@ func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *Reques
 		fmt.Println(strconv.Itoa(server) + "的投票不同意")
 	}
 
-	return reply.VoteGranted, reply.Term
+	resultChannel <- reply.VoteGranted
 }
 
 // the service using Raft (e.g. a k/v server) wants to start
@@ -390,6 +390,7 @@ func (rf *Raft) StartRequestVote() {
 	rf.votedFor = rf.me
 	rf.hasVoted = true
 	rf.votedMu.Unlock()
+	result := make(chan bool, len(rf.peers))
 	fmt.Println(strconv.Itoa(rf.me) + "开始发起选举")
 	for i := 0; i < len(rf.peers); i++ {
 		if i == rf.me {
@@ -403,37 +404,30 @@ func (rf *Raft) StartRequestVote() {
 			LastLogTerm:  rf.currentTerm - 1,
 		}
 		reply := &RequestVoteReply{}
-		ok, term := rf.sendRequestVote(i, args, reply)
-		if ok {
-			fmt.Println(strconv.Itoa(i) + "支持")
+		go rf.sendRequestVote(i, args, reply, result)
+	}
+	time.Sleep(150 * time.Millisecond)
+	for i := 0; i < len(rf.peers); i++ {
+		if <-result {
 			count++
+			rf.statusMu.Lock()
+			if count > len(rf.peers)/2 {
+				rf.status = 2
+				rf.votedMu.Lock()
+				rf.hasVoted = false
+				rf.votedMu.Unlock()
+				fmt.Println(strconv.Itoa(rf.me) + "成为领导者, term 是" + strconv.Itoa(rf.currentTerm))
+				rf.heartBeatMu.Lock()
+				rf.hasHeartBeat = true
+				rf.heartBeatMu.Unlock()
+				rf.SendHeartBeat()
+			} else {
+				rf.status = 0
+			}
+			rf.statusMu.Unlock()
 		}
-		if term == rf.currentTerm {
-			fmt.Println(strconv.Itoa(i) + "也是候选人")
-		}
-		if term > rf.currentTerm {
-			fmt.Println("自己term更小所以退出选举")
-			break
-		}
-
-	}
-	rf.statusMu.Lock()
-	if count > len(rf.peers)/2 {
-		rf.status = 2
-		rf.votedMu.Lock()
-
-		rf.hasVoted = false
-		rf.votedMu.Unlock()
-		fmt.Println(strconv.Itoa(rf.me) + "成为领导者, term 是" + strconv.Itoa(rf.currentTerm))
-		rf.heartBeatMu.Lock()
-		rf.hasHeartBeat = true
-		rf.heartBeatMu.Unlock()
-		rf.SendHeartBeat()
-	} else {
-		rf.status = 0
 	}
 
-	rf.statusMu.Unlock()
 }
 
 // the service or tester wants to create a Raft server. the ports
