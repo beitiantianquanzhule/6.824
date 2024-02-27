@@ -259,9 +259,9 @@ func (rf *Raft) ReceiveInstructRPC(args *AppendEntriesArgs, reply *AppendEntries
 // the struct itself.
 func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *RequestVoteReply) (bool, int) {
 	fmt.Println(time.Now())
-	rf.peers[server].Call("Raft.RequestVote", args, reply)
+	ok := rf.peers[server].Call("Raft.RequestVote", args, reply)
 	fmt.Println(time.Now())
-	if reply.Term == 0 {
+	if !ok {
 		fmt.Println(strconv.Itoa(server) + "断线了")
 		reply.VoteGranted = true
 	}
