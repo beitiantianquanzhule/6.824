@@ -348,7 +348,7 @@ func (rf *Raft) ticker() {
 		sleepTime := time.Duration(r.Float32()*400+350) * time.Millisecond
 		time.Sleep(sleepTime)
 		if rf.killed() {
-			return
+			continue
 		}
 		rf.heartBeatMu.Lock()
 		if !rf.hasHeartBeat {
