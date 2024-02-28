@@ -196,7 +196,11 @@ func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	rf.heartBeatMu.Unlock()
 	rf.votedMu.Lock()
 	defer rf.votedMu.Unlock()
-
+	rf.statusMu.Lock()
+	if rf.status == 2 && rf.currentTerm < args.Term {
+		rf.status = 0
+	}
+	rf.statusMu.Unlock()
 	if rf.hasVoted && rf.currentTerm >= args.Term {
 		fmt.Println(strconv.Itoa(rf.me) + "已经投票了" + "无法给" + strconv.Itoa(args.CandidateId) + "投票了" + "已经投给了" + strconv.Itoa(rf.votedFor))
 		reply.VoteGranted = false
