@@ -378,7 +378,8 @@ func (rf *Raft) SendHeartBeat() {
 			break
 		}
 		args := &AppendEntriesArgs{
-			Term: rf.currentTerm,
+			Term:   rf.currentTerm,
+			Leader: rf.me,
 		}
 		reply := &AppendEntriesReply{}
 		go rf.sendHeartBeat(i, args, reply, result)

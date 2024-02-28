@@ -115,7 +115,7 @@ func TestManyElections2A(t *testing.T) {
 	}
 
 	cfg.checkOneLeader()
-
+	fmt.Println()
 	cfg.end()
 }
 
