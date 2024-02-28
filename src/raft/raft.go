@@ -345,7 +345,7 @@ func (rf *Raft) ticker() {
 		// Your code here to check if a leader election should
 		// be started and to randomize sleeping time using
 		// time.Sleep().
-		sleepTime := time.Duration(r.Float32()*400+350) * time.Millisecond
+		sleepTime := time.Duration(r.Float32()*400+400) * time.Millisecond
 		time.Sleep(sleepTime)
 		if rf.killed() {
 			continue
