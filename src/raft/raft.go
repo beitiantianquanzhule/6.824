@@ -390,7 +390,6 @@ func (rf *Raft) SendHeartBeat() {
 	for i := 0; i < len(rf.peers)-1; i++ {
 		tem := <-result
 		if !tem.Connected {
-			fmt.Println("tttttttttttttt")
 			continue
 		}
 		connectedNum++
