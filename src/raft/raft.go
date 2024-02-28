@@ -387,7 +387,7 @@ func (rf *Raft) SendHeartBeat() {
 		//fmt.Println("发起心跳检测的领导者的id是" + strconv.Itoa(rf.me) + "term是" + strconv.Itoa(rf.currentTerm) + "收到的id是" + strconv.Itoa(i) + "term是" + strconv.Itoa(reply.Term))
 	}
 	connectedNum := 0
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(300 * time.Millisecond)
 	for i := 0; i < len(rf.peers)-1; i++ {
 		tem := <-result
 		if !tem.Connected {
