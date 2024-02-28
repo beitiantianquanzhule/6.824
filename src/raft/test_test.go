@@ -8,7 +8,10 @@ package raft
 // test with the original before submitting.
 //
 
-import "testing"
+import (
+	"strconv"
+	"testing"
+)
 import "fmt"
 import "time"
 import "math/rand"
@@ -108,6 +111,8 @@ func TestManyElections2A(t *testing.T) {
 		// either the current leader should still be alive,
 		// or the remaining four should elect a new one.
 		cfg.checkOneLeader()
+
+		fmt.Print(strconv.Itoa(ii) + strconv.Itoa(ii) + strconv.Itoa(ii) + strconv.Itoa(ii) + strconv.Itoa(ii) + strconv.Itoa(ii) + strconv.Itoa(ii))
 
 		cfg.connect(i1)
 		cfg.connect(i2)
