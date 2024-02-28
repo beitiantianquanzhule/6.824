@@ -413,7 +413,6 @@ func (rf *Raft) SendHeartBeat() {
 func (rf *Raft) sendHeartBeat(server int, args *AppendEntriesArgs, reply *AppendEntriesReply, resultChannel chan ChannelResult) {
 
 	ok := rf.peers[server].Call("Raft.ReceiveInstructRPC", args, reply)
-	fmt.Print("我是" + strconv.Itoa(rf.me) + "在投票选举中")
 	if !ok {
 		fmt.Println(strconv.Itoa(server) + "断线了")
 
