@@ -450,7 +450,10 @@ func (rf *Raft) StartRequestVote() {
 		}
 	}
 	fmt.Println(strconv.Itoa(count) + ":" + strconv.Itoa(connectedNum))
-	if count > (connectedNum / 2) {
+	rf.heartBeatMu.Lock()
+	rf.hasHeartBeat = true
+	rf.heartBeatMu.Unlock()
+	if connectedNum != 1 && count > (connectedNum/2) {
 		rf.statusMu.Lock()
 		rf.status = 2
 		rf.statusMu.Unlock()
@@ -458,9 +461,6 @@ func (rf *Raft) StartRequestVote() {
 		rf.hasVoted = false
 		rf.votedMu.Unlock()
 		fmt.Println(strconv.Itoa(rf.me) + "成为领导者, term 是" + strconv.Itoa(rf.currentTerm))
-		rf.heartBeatMu.Lock()
-		rf.hasHeartBeat = true
-		rf.heartBeatMu.Unlock()
 		rf.SendHeartBeat()
 	} else {
 		rf.statusMu.Lock()
