@@ -182,7 +182,8 @@ type AppendEntriesArgs struct {
 }
 
 type AppendEntriesReply struct {
-	Term int // 现在的任期
+	Term      int  // 现在的任期
+	Connected bool // 是否连接
 }
 
 // example RequestVote RPC handler.
@@ -369,6 +370,7 @@ func (rf *Raft) ticker() {
 }
 
 func (rf *Raft) SendHeartBeat() {
+	result := make(chan ChannelResult, len(rf.peers))
 	for i := 0; i < len(rf.peers); i++ {
 		if i == rf.me {
 			continue
@@ -380,20 +382,50 @@ func (rf *Raft) SendHeartBeat() {
 			Term: rf.currentTerm,
 		}
 		reply := &AppendEntriesReply{}
-		ok := rf.peers[i].Call("Raft.ReceiveInstructRPC", args, reply)
-		if !ok {
-			//fmt.Println("我是" + strconv.Itoa(rf.me) + "id是" + strconv.Itoa(i) + "的服从者已经下线")
-		}
+		go rf.sendHeartBeat(i, args, reply, result)
+
 		//fmt.Println("发起心跳检测的领导者的id是" + strconv.Itoa(rf.me) + "term是" + strconv.Itoa(rf.currentTerm) + "收到的id是" + strconv.Itoa(i) + "term是" + strconv.Itoa(reply.Term))
-		if reply.Term > rf.currentTerm {
+	}
+	connectedNum := 0
+	time.Sleep(100 * time.Millisecond)
+	for i := 0; i < len(rf.peers)-1; i++ {
+		tem := <-result
+		if !tem.Connected {
+			continue
+		}
+		connectedNum++
+		if tem.Term > rf.currentTerm {
 			fmt.Println("领导下线")
 			rf.statusMu.Lock()
 			rf.status = 0
 			rf.statusMu.Unlock()
-			rf.currentTerm = reply.Term
+			rf.currentTerm = tem.Term
 			return
 		}
 	}
+	if connectedNum == 0 {
+		fmt.Println("领导者" + strconv.Itoa(rf.me) + "已经掉线，降为追随者")
+		rf.statusMu.Lock()
+		rf.status = 0
+		rf.statusMu.Unlock()
+	}
+}
+
+func (rf *Raft) sendHeartBeat(server int, args *AppendEntriesArgs, reply *AppendEntriesReply, resultChannel chan ChannelResult) {
+	fmt.Println(time.Now())
+	ok := rf.peers[server].Call("Raft.ReceiveInstructRPC", args, reply)
+	fmt.Println(time.Now())
+	fmt.Print("我是" + strconv.Itoa(rf.me) + "在投票选举中")
+	if !ok {
+		fmt.Println(strconv.Itoa(server) + "断线了")
+
+	}
+	result := ChannelResult{
+		Term:      reply.Term,
+		Index:     server,
+		Connected: ok,
+	}
+	resultChannel <- result
 }
 
 // 根据状态发起心跳检测
