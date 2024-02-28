@@ -190,7 +190,7 @@ type AppendEntriesReply struct {
 func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
 	// Your code here (2A, 2B).
 	reply.Term = rf.currentTerm
-	fmt.Print(time.Now())
+
 	fmt.Println(strconv.Itoa(rf.me) + "收到投票请求" + "给" + strconv.Itoa(args.CandidateId))
 	rf.heartBeatMu.Lock()
 	rf.hasHeartBeat = true
@@ -264,9 +264,9 @@ func (rf *Raft) ReceiveInstructRPC(args *AppendEntriesArgs, reply *AppendEntries
 // that the caller passes the address of the reply struct with &, not
 // the struct itself.
 func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *RequestVoteReply, resultChannel chan ChannelResult) {
-	fmt.Println(time.Now())
+
 	ok := rf.peers[server].Call("Raft.RequestVote", args, reply)
-	fmt.Println(time.Now())
+
 	fmt.Print("我是" + strconv.Itoa(rf.me) + "在投票选举中")
 	if !ok {
 		fmt.Println(strconv.Itoa(server) + "断线了")
@@ -355,7 +355,7 @@ func (rf *Raft) ticker() {
 		if !rf.hasHeartBeat {
 
 			rf.currentTerm = rf.currentTerm + 1
-			fmt.Println(time.Now())
+
 			fmt.Println(strconv.Itoa(rf.me) + "选择" + "发起选举" + "term是" + strconv.Itoa(rf.currentTerm))
 			rf.statusMu.Lock()
 			rf.status = 1
@@ -413,7 +413,7 @@ func (rf *Raft) SendHeartBeat() {
 }
 
 func (rf *Raft) sendHeartBeat(server int, args *AppendEntriesArgs, reply *AppendEntriesReply, resultChannel chan ChannelResult) {
-	fmt.Println(time.Now())
+
 	ok := rf.peers[server].Call("Raft.ReceiveInstructRPC", args, reply)
 	fmt.Println(time.Now())
 	fmt.Print("我是" + strconv.Itoa(rf.me) + "在投票选举中")
