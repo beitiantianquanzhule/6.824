@@ -454,6 +454,9 @@ func (rf *Raft) StartRequestVote() {
 		if i == rf.me {
 			continue
 		}
+		if rf.killed() {
+			return
+		}
 		fmt.Println("向" + strconv.Itoa(i) + "发起投票请求")
 		args := &RequestVoteArgs{
 			Term:         rf.currentTerm,
@@ -468,7 +471,9 @@ func (rf *Raft) StartRequestVote() {
 	connectedNum := 1
 	for i := 0; i < len(rf.peers)-1; i++ {
 		ch := <-result
-
+		if rf.killed() {
+			return
+		}
 		if ch.Connected {
 			fmt.Println(strconv.Itoa(ch.Index) + "连接了")
 			connectedNum++
