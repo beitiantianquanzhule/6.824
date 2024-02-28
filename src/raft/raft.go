@@ -262,6 +262,7 @@ func (rf *Raft) sendRequestVote(server int, args *RequestVoteArgs, reply *Reques
 	fmt.Println(time.Now())
 	ok := rf.peers[server].Call("Raft.RequestVote", args, reply)
 	fmt.Println(time.Now())
+	fmt.Print("我是" + strconv.Itoa(rf.me) + "在投票选举中")
 	if !ok {
 		fmt.Println(strconv.Itoa(server) + "断线了")
 
