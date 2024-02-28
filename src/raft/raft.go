@@ -342,6 +342,9 @@ func (rf *Raft) ticker() {
 		// time.Sleep().
 		sleepTime := time.Duration(r.Float32()*400+300) * time.Millisecond
 		time.Sleep(sleepTime)
+		if rf.killed() {
+			break
+		}
 		rf.heartBeatMu.Lock()
 		if !rf.hasHeartBeat {
 
@@ -364,6 +367,9 @@ func (rf *Raft) SendHeartBeat() {
 	for i := 0; i < len(rf.peers); i++ {
 		if i == rf.me {
 			continue
+		}
+		if rf.killed() {
+			break
 		}
 		args := &AppendEntriesArgs{
 			Term: rf.currentTerm,
